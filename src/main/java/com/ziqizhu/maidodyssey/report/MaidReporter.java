@@ -6,6 +6,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,7 +33,7 @@ public final class MaidReporter {
 
     /** Something is stopping the maid from finishing her job. */
     public static void problem(EntityMaid maid, @Nullable BlockPos pos, String key, Object... args) {
-        send(maid, pos, ChatFormatting.GOLD, key, args);
+        send(maid, pos, Component.translatable(key, args));
     }
 
     /** The maid finished a job; only shown when the player opted in. */
@@ -40,10 +41,26 @@ public final class MaidReporter {
         if (!MaidOdysseyConfig.chatReportSuccess()) {
             return;
         }
-        send(maid, pos, ChatFormatting.GREEN, key, args);
+        send(maid, pos, Component.translatable(key, args));
     }
 
-    private static void send(EntityMaid maid, @Nullable BlockPos pos, ChatFormatting color, String key, Object[] args) {
+    public static MutableComponent gold(Object value) {
+        return Component.literal(String.valueOf(value)).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
+    }
+
+    public static MutableComponent red(Object value) {
+        return Component.literal(String.valueOf(value)).withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
+    }
+
+    public static MutableComponent red(Component value) {
+        return value.copy().withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
+    }
+
+    public static MutableComponent aqua(Component value) {
+        return value.copy().withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+    }
+
+    private static void send(EntityMaid maid, @Nullable BlockPos pos, Component body) {
         if (!MaidOdysseyConfig.chatReportEnabled()) {
             return;
         }
@@ -55,21 +72,21 @@ public final class MaidReporter {
         if (server == null) {
             return;
         }
-        if (!passesThrottle(maid, pos, key, level.getGameTime())) {
+        String throttleKey = body.getContents() instanceof TranslatableContents translatable
+                ? translatable.getKey()
+                : body.getString();
+        if (!passesThrottle(maid, pos, throttleKey, level.getGameTime())) {
             return;
         }
 
-        MutableComponent message = Component.literal("[")
-                .append(Component.translatable("message.maid_odyssey.prefix"))
-                .append("] ")
-                .withStyle(ChatFormatting.DARK_AQUA)
+        MutableComponent message = Component.literal("[Maid Odyssey] ").withStyle(ChatFormatting.DARK_AQUA)
                 .append(maid.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE));
         if (pos != null) {
             message.append(Component.literal(" [%d, %d, %d]".formatted(pos.getX(), pos.getY(), pos.getZ()))
                     .withStyle(ChatFormatting.DARK_GRAY));
         }
         message.append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                .append(Component.translatable(key, args).withStyle(color));
+                .append(body);
 
         if (MaidOdysseyConfig.chatReportToEveryone()) {
             server.getPlayerList().broadcastSystemMessage(message, false);

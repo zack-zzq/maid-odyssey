@@ -1,8 +1,7 @@
 {
   "task.maid_odyssey.clean_muffler": "清理消声仓",
   "task.maid_odyssey.clean_muffler.desc": "清空附近格雷科技消声仓中积累的灰烬。",
-  "task.maid_odyssey.clean_muffler.desc_2": "灰烬会收进女仆背包，也可在配置中改为直接销毁。",
-  "task.maid_odyssey.clean_muffler.condition.has_room": "背包有剩余空间",
+  "task.maid_odyssey.clean_muffler.desc_2": "灰烬会收进背包。背包满了时会把多出来的灰烬吃掉（每次最多一组），并降低 1 点好感度。",
 
   "task.maid_odyssey.maintenance_hatch": "维护维护仓",
   "task.maid_odyssey.maintenance_hatch.desc": "修复附近损坏的格雷科技维护仓。",
@@ -11,24 +10,25 @@
 
   "task.maid_odyssey.gt_housekeeping": "工厂维护员",
   "task.maid_odyssey.gt_housekeeping.desc": "同时清理消声仓灰烬并修复维护仓。",
-  "task.maid_odyssey.gt_housekeeping.desc_2": "需要同时准备维修工具和放灰烬的空间。",
+  "task.maid_odyssey.gt_housekeeping.desc_2": "请准备维修工具。灰烬会进背包，塞满了女仆会自己吃掉。",
   "task.maid_odyssey.gt_housekeeping.condition.has_tool": "携带了维修工具",
 
-  "message.maid_odyssey.prefix": "女仆奥德赛",
   "message.maid_odyssey.list_separator": "、",
 
-  "message.maid_odyssey.muffler.cleaned": "从消声仓中收走了 %s 个灰烬。",
-  "message.maid_odyssey.muffler.voided": "清理并销毁了消声仓中的 %s 个灰烬。",
-  "message.maid_odyssey.muffler.backpack_full": "背包已经满了，没办法再把这个消声仓里的灰烬取出来。",
+  "message.maid_odyssey.muffler.cleaned": "消声仓已经打扫干净了，收走了 %s 份灰烬，请主人放心～",
+  "message.maid_odyssey.muffler.voided": "这些灰烬太脏了，女仆已经帮主人丢掉 %s 份啦～",
+  "message.maid_odyssey.muffler.ate_ash": "呜呜…背包已经被灰烬塞满了，只好把这 %s 份灰烬吃掉了。好感度 %s …下次请给女仆留一点空位嘛。",
 
-  "message.maid_odyssey.maintenance.repaired": "修好了这个维护仓的 %s 处故障。",
-  "message.maid_odyssey.maintenance.duct_taped": "用胶带临时糊住了 %s 处故障。",
-  "message.maid_odyssey.maintenance.missing_tools": "没有合适的工具来修这个维护仓，还缺少：%s",
+  "message.maid_odyssey.maintenance.repaired": "维护仓的 %s 处小问题已经修好了，请主人验收～",
+  "message.maid_odyssey.maintenance.duct_taped": "工具不太够呢，先用胶带把 %s 处故障糊住了…请主人见谅。",
+  "message.maid_odyssey.maintenance.missing_tools": "呜，这个维护仓女仆修不好，还缺少：%s。请主人给女仆准备一下好不好？",
 
-  "message.maid_odyssey.gt.not_installed": "没有安装格雷科技，这项工作没有可以照看的机器。",
-  "message.maid_odyssey.gt.api_mismatch": "无法与格雷科技通信：%s",
-  "message.maid_odyssey.unreachable": "我走不到足够近的地方来操作这台机器。",
-  "message.maid_odyssey.hazard.flee": "那边会中毒或烫伤，我先躲开。",
+  "message.maid_odyssey.gt.not_installed": "这里没有格雷科技呢，女仆没有可以照看的机器……",
+  "message.maid_odyssey.gt.api_mismatch": "女仆和格雷科技说不上话：%s",
+  "message.maid_odyssey.unreachable": "这边女仆走不过去呢，够不到这台机器……",
+  "message.maid_odyssey.hazard.flee": "好危险！那边会%s或%s，女仆先躲开了～",
+  "message.maid_odyssey.hazard.poison": "中毒",
+  "message.maid_odyssey.hazard.burn": "烫伤",
 
   "message.maid_odyssey.tool.wrench": "扳手",
   "message.maid_odyssey.tool.screwdriver": "螺丝刀",

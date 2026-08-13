@@ -43,7 +43,7 @@ public final class MaintenanceWork {
             }
             if (!GtCompat.markProblemFixed(machine, problem.index())) {
                 MaidReporter.problem(maid, pos, "message.maid_odyssey.gt.api_mismatch",
-                        Component.literal(GtCompat.bindingProblem()));
+                        MaidReporter.red(GtCompat.bindingProblem()));
                 return true;
             }
             GtCompat.damageTool(tool, maid);
@@ -69,10 +69,11 @@ public final class MaintenanceWork {
             }
             MaidReporter.success(maid, pos, taped
                     ? "message.maid_odyssey.maintenance.duct_taped"
-                    : "message.maid_odyssey.maintenance.repaired", repaired);
+                    : "message.maid_odyssey.maintenance.repaired", MaidReporter.gold(repaired));
         }
         if (!missing.isEmpty()) {
-            MaidReporter.problem(maid, pos, "message.maid_odyssey.maintenance.missing_tools", listToolNames(missing));
+            MaidReporter.problem(maid, pos, "message.maid_odyssey.maintenance.missing_tools",
+                    MaidReporter.aqua(listToolNames(missing)));
             return true;
         }
         return false;

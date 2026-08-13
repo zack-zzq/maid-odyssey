@@ -1,8 +1,7 @@
 {
   "task.maid_odyssey.clean_muffler": "Muffler Cleaning",
   "task.maid_odyssey.clean_muffler.desc": "Empties the ash out of nearby GregTech muffler hatches.",
-  "task.maid_odyssey.clean_muffler.desc_2": "The ash goes into her backpack, or is destroyed if configured that way.",
-  "task.maid_odyssey.clean_muffler.condition.has_room": "Backpack has free space",
+  "task.maid_odyssey.clean_muffler.desc_2": "Ash goes into her backpack. If it is full she will eat leftover ash (one stack at a time) and lose 1 favorability.",
 
   "task.maid_odyssey.maintenance_hatch": "Hatch Maintenance",
   "task.maid_odyssey.maintenance_hatch.desc": "Repairs broken GregTech maintenance hatches nearby.",
@@ -11,24 +10,25 @@
 
   "task.maid_odyssey.gt_housekeeping": "Factory Housekeeping",
   "task.maid_odyssey.gt_housekeeping.desc": "Cleans muffler hatches and repairs maintenance hatches, both at once.",
-  "task.maid_odyssey.gt_housekeeping.desc_2": "Needs tool room in her backpack for both jobs.",
+  "task.maid_odyssey.gt_housekeeping.desc_2": "Needs maintenance tools. Ash goes in her backpack; she will eat the overflow if it fills up.",
   "task.maid_odyssey.gt_housekeeping.condition.has_tool": "Carrying a maintenance tool",
 
-  "message.maid_odyssey.prefix": "Maid Odyssey",
   "message.maid_odyssey.list_separator": ", ",
 
-  "message.maid_odyssey.muffler.cleaned": "Collected %s ash from the muffler hatch.",
-  "message.maid_odyssey.muffler.voided": "Threw away %s ash from the muffler hatch.",
-  "message.maid_odyssey.muffler.backpack_full": "My backpack is full, I cannot take any more ash out of this muffler hatch.",
+  "message.maid_odyssey.muffler.cleaned": "The muffler hatch is tidy~ collected %s ash for you, Master.",
+  "message.maid_odyssey.muffler.voided": "That ash was so dirty, I threw away %s of it for you~",
+  "message.maid_odyssey.muffler.ate_ash": "Uwu… my backpack is stuffed with ash, so I had to eat %s ash. Favorability %s… please leave me a little space next time, Master.",
 
-  "message.maid_odyssey.maintenance.repaired": "Fixed %s maintenance problem(s) on this hatch.",
-  "message.maid_odyssey.maintenance.duct_taped": "Patched %s maintenance problem(s) with duct tape.",
-  "message.maid_odyssey.maintenance.missing_tools": "I have no tool for this maintenance hatch, still missing: %s",
+  "message.maid_odyssey.maintenance.repaired": "I fixed %s little problem(s) on this hatch. Please inspect, Master~",
+  "message.maid_odyssey.maintenance.duct_taped": "I was short on tools, so I patched %s problem(s) with duct tape… please forgive me.",
+  "message.maid_odyssey.maintenance.missing_tools": "Uu, I cannot repair this hatch. Still missing: %s. Would Master prepare them for me?",
 
-  "message.maid_odyssey.gt.not_installed": "GregTech Modern is not installed, so there is nothing for me to look after.",
-  "message.maid_odyssey.gt.api_mismatch": "I cannot talk to GregTech Modern: %s",
-  "message.maid_odyssey.unreachable": "I cannot get close enough to work on this machine.",
-  "message.maid_odyssey.hazard.flee": "That spot would poison or burn me, I am staying clear.",
+  "message.maid_odyssey.gt.not_installed": "There is no GregTech here… this maid has no machines to look after.",
+  "message.maid_odyssey.gt.api_mismatch": "This maid cannot talk to GregTech: %s",
+  "message.maid_odyssey.unreachable": "I cannot walk over there, this machine is out of reach…",
+  "message.maid_odyssey.hazard.flee": "So dangerous! That spot would %s or %s me, I am staying away~",
+  "message.maid_odyssey.hazard.poison": "poison",
+  "message.maid_odyssey.hazard.burn": "burn",
 
   "message.maid_odyssey.tool.wrench": "Wrench",
   "message.maid_odyssey.tool.screwdriver": "Screwdriver",

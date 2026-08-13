@@ -5,7 +5,6 @@ import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
 import com.ziqizhu.maidodyssey.gt.GtCompat;
 import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -23,7 +22,7 @@ public final class MufflerWork {
         IItemHandler hatch = GtCompat.getMufflerInventory(machine);
         if (hatch == null) {
             MaidReporter.problem(maid, pos, "message.maid_odyssey.gt.api_mismatch",
-                    Component.literal(GtCompat.bindingProblem()));
+                    MaidReporter.red(GtCompat.bindingProblem()));
             return true;
         }
 
@@ -71,10 +70,11 @@ public final class MufflerWork {
             maid.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
             MaidReporter.success(maid, pos, destroyAsh
                     ? "message.maid_odyssey.muffler.voided"
-                    : "message.maid_odyssey.muffler.cleaned", taken);
+                    : "message.maid_odyssey.muffler.cleaned", MaidReporter.gold(taken));
         }
-        if (leftBehind) {
-            MaidReporter.problem(maid, pos, "message.maid_odyssey.muffler.backpack_full");
+        if (leftBehind && !destroyAsh) {
+            AshEating.start(maid, hatch, pos);
+            leftBehind = GtCompat.hasAnyItem(hatch);
         }
         return leftBehind;
     }

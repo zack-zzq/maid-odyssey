@@ -7,6 +7,7 @@ import com.ziqizhu.maidodyssey.gt.GtCompat;
 import com.ziqizhu.maidodyssey.hazard.HazardTracker;
 import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
@@ -54,7 +55,9 @@ public class MaidAvoidHazardTask extends Behavior<EntityMaid> {
             BlockPos safe = findSafeSpot(level, maid, hazards);
             if (safe != null) {
                 BehaviorUtils.setWalkAndLookTargetMemories(maid, safe, FLEE_SPEED, 0);
-                MaidReporter.problem(maid, feet, "message.maid_odyssey.hazard.flee");
+                MaidReporter.problem(maid, feet, "message.maid_odyssey.hazard.flee",
+                        MaidReporter.red(Component.translatable("message.maid_odyssey.hazard.poison")),
+                        MaidReporter.red(Component.translatable("message.maid_odyssey.hazard.burn")));
             } else {
                 cancelWalk(maid);
             }
