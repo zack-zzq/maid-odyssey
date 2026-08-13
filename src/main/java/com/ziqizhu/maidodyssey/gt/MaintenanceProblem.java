@@ -1,4 +1,4 @@
-package com.zackzzq.maidodyssey.gt;
+package com.ziqizhu.maidodyssey.gt;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;

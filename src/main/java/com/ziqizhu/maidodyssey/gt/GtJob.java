@@ -1,4 +1,4 @@
-package com.zackzzq.maidodyssey.gt;
+package com.ziqizhu.maidodyssey.gt;
 
 import java.util.Set;
 

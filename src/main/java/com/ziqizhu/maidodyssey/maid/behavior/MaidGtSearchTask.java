@@ -1,12 +1,12 @@
-package com.zackzzq.maidodyssey.maid.behavior;
+package com.ziqizhu.maidodyssey.maid.behavior;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
-import com.zackzzq.maidodyssey.MaidOdysseyConfig;
-import com.zackzzq.maidodyssey.gt.GtCompat;
-import com.zackzzq.maidodyssey.gt.GtJob;
-import com.zackzzq.maidodyssey.report.MaidReporter;
+import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
+import com.ziqizhu.maidodyssey.gt.GtCompat;
+import com.ziqizhu.maidodyssey.gt.GtJob;
+import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;

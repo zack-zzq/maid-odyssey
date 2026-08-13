@@ -1,7 +1,7 @@
-package com.zackzzq.maidodyssey.report;
+package com.ziqizhu.maidodyssey.report;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.zackzzq.maidodyssey.MaidOdysseyConfig;
+import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

@@ -1,6 +1,6 @@
-package com.zackzzq.maidodyssey.gt;
+package com.ziqizhu.maidodyssey.gt;
 
-import com.zackzzq.maidodyssey.MaidOdyssey;
+import com.ziqizhu.maidodyssey.MaidOdyssey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -301,7 +301,7 @@ public final class GtCompat {
     }
 
     private static boolean isToolUsable(ItemStack stack) {
-        int reserve = com.zackzzq.maidodyssey.MaidOdysseyConfig.toolDurabilityReserve();
+        int reserve = com.ziqizhu.maidodyssey.MaidOdysseyConfig.toolDurabilityReserve();
         if (stack.isDamageableItem() && stack.getMaxDamage() - stack.getDamageValue() <= reserve) {
             return false;
         }

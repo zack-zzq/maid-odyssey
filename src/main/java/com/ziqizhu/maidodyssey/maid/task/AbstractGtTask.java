@@ -1,14 +1,14 @@
-package com.zackzzq.maidodyssey.maid.task;
+package com.ziqizhu.maidodyssey.maid.task;
 
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
-import com.zackzzq.maidodyssey.gt.GtCompat;
-import com.zackzzq.maidodyssey.gt.GtJob;
-import com.zackzzq.maidodyssey.maid.behavior.GtTaskContext;
-import com.zackzzq.maidodyssey.maid.behavior.MaidGtSearchTask;
-import com.zackzzq.maidodyssey.maid.behavior.MaidGtWorkTask;
+import com.ziqizhu.maidodyssey.gt.GtCompat;
+import com.ziqizhu.maidodyssey.gt.GtJob;
+import com.ziqizhu.maidodyssey.maid.behavior.GtTaskContext;
+import com.ziqizhu.maidodyssey.maid.behavior.MaidGtSearchTask;
+import com.ziqizhu.maidodyssey.maid.behavior.MaidGtWorkTask;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.item.Item;

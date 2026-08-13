@@ -1,9 +1,9 @@
-package com.zackzzq.maidodyssey.maid.work;
+package com.ziqizhu.maidodyssey.maid.work;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.zackzzq.maidodyssey.MaidOdysseyConfig;
-import com.zackzzq.maidodyssey.gt.GtCompat;
-import com.zackzzq.maidodyssey.report.MaidReporter;
+import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
+import com.ziqizhu.maidodyssey.gt.GtCompat;
+import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;

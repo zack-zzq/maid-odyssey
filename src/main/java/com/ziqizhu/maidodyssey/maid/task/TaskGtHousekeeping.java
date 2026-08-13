@@ -1,11 +1,11 @@
-package com.zackzzq.maidodyssey.maid.task;
+package com.ziqizhu.maidodyssey.maid.task;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
-import com.zackzzq.maidodyssey.MaidOdyssey;
-import com.zackzzq.maidodyssey.gt.GtJob;
-import com.zackzzq.maidodyssey.maid.work.MaintenanceWork;
+import com.ziqizhu.maidodyssey.MaidOdyssey;
+import com.ziqizhu.maidodyssey.gt.GtJob;
+import com.ziqizhu.maidodyssey.maid.work.MaintenanceWork;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;

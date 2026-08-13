@@ -1,4 +1,4 @@
-package com.zackzzq.maidodyssey.maid.behavior;
+package com.ziqizhu.maidodyssey.maid.behavior;
 
 import net.minecraft.core.BlockPos;
 

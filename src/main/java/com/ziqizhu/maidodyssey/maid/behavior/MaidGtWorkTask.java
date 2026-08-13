@@ -1,14 +1,14 @@
-package com.zackzzq.maidodyssey.maid.behavior;
+package com.ziqizhu.maidodyssey.maid.behavior;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.google.common.collect.ImmutableMap;
-import com.zackzzq.maidodyssey.MaidOdysseyConfig;
-import com.zackzzq.maidodyssey.gt.GtCompat;
-import com.zackzzq.maidodyssey.gt.GtJob;
-import com.zackzzq.maidodyssey.maid.work.MaintenanceWork;
-import com.zackzzq.maidodyssey.maid.work.MufflerWork;
-import com.zackzzq.maidodyssey.report.MaidReporter;
+import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
+import com.ziqizhu.maidodyssey.gt.GtCompat;
+import com.ziqizhu.maidodyssey.gt.GtJob;
+import com.ziqizhu.maidodyssey.maid.work.MaintenanceWork;
+import com.ziqizhu.maidodyssey.maid.work.MufflerWork;
+import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.Brain;

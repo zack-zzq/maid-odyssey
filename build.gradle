@@ -67,7 +67,7 @@ dependencies {
     }
 
     // GregTech Modern (the GregTech Odyssey fork) is reached purely through reflection at
-    // runtime, see com.zackzzq.maidodyssey.gt.GtCompat. No compile time dependency on
+    // runtime, see com.ziqizhu.maidodyssey.gt.GtCompat. No compile time dependency on
     // purpose: the GTO fork rebases often and ships a closed source gtolib.
 }
 

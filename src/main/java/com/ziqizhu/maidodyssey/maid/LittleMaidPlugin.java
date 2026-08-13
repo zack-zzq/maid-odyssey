@@ -1,13 +1,13 @@
-package com.zackzzq.maidodyssey.maid;
+package com.ziqizhu.maidodyssey.maid;
 
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
-import com.zackzzq.maidodyssey.MaidOdyssey;
-import com.zackzzq.maidodyssey.gt.GtCompat;
-import com.zackzzq.maidodyssey.maid.task.TaskCleanMuffler;
-import com.zackzzq.maidodyssey.maid.task.TaskGtHousekeeping;
-import com.zackzzq.maidodyssey.maid.task.TaskMaintenanceHatch;
+import com.ziqizhu.maidodyssey.MaidOdyssey;
+import com.ziqizhu.maidodyssey.gt.GtCompat;
+import com.ziqizhu.maidodyssey.maid.task.TaskCleanMuffler;
+import com.ziqizhu.maidodyssey.maid.task.TaskGtHousekeeping;
+import com.ziqizhu.maidodyssey.maid.task.TaskMaintenanceHatch;
 
 /**
  * Touhou Little Maid discovers this class by scanning for the annotation, so it needs to stay

@@ -1,7 +1,7 @@
-package com.zackzzq.maidodyssey;
+package com.ziqizhu.maidodyssey;
 
 import com.mojang.logging.LogUtils;
-import com.zackzzq.maidodyssey.report.MaidReporter;
+import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
