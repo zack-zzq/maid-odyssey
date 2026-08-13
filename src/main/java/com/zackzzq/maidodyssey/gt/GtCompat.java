@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class GtCompat {
     public static final String GTCEU_ID = "gtceu";
 
+    private static final String CLASS_META_MACHINE = "com.gregtechceu.gtceu.api.machine.MetaMachine";
     private static final String CLASS_META_MACHINE_BLOCK = "com.gregtechceu.gtceu.api.block.MetaMachineBlock";
     private static final String CLASS_TOOL_HELPER = "com.gregtechceu.gtceu.api.item.tool.ToolHelper";
     private static final String CLASS_TOOL_TYPE = "com.gregtechceu.gtceu.api.item.tool.GTToolType";
@@ -42,6 +43,7 @@ public final class GtCompat {
 
     private static volatile boolean bootstrapped;
     private static Class<?> metaMachineBlockClass;
+    private static Method getMachineStatic;
     private static Object[] toolTypes;
     private static Method toolHelperIs;
     private static Method toolTypeIs;
@@ -76,6 +78,10 @@ public final class GtCompat {
                 return;
             }
             metaMachineBlockClass = findClass(CLASS_META_MACHINE_BLOCK);
+            Class<?> metaMachineClass = findClass(CLASS_META_MACHINE);
+            if (metaMachineClass != null) {
+                getMachineStatic = staticMethod(metaMachineClass, "getMachine", BlockGetter.class, BlockPos.class);
+            }
 
             Class<?> toolTypeClass = findClass(CLASS_TOOL_TYPE);
             Class<?> toolHelperClass = findClass(CLASS_TOOL_HELPER);
@@ -124,6 +130,12 @@ public final class GtCompat {
             return null;
         }
         bootstrap();
+        if (getMachineStatic != null) {
+            Object machine = invoke(getMachineStatic, null, level, pos);
+            if (machine != null) {
+                return machine;
+            }
+        }
         BlockState state = level.getBlockState(pos);
         if (!state.hasBlockEntity()) {
             return null;

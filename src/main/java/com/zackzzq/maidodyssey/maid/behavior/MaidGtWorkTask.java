@@ -8,28 +8,24 @@ import com.zackzzq.maidodyssey.gt.GtCompat;
 import com.zackzzq.maidodyssey.gt.GtJob;
 import com.zackzzq.maidodyssey.maid.work.MaintenanceWork;
 import com.zackzzq.maidodyssey.maid.work.MufflerWork;
+import com.zackzzq.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Optional;
 import java.util.Set;
 
 /**
- * Runs once the maid has arrived next to the machine picked by {@link MaidGtSearchTask}.
+ * Runs once the maid is within reach of the machine picked by {@link MaidGtSearchTask}.
  * <p>
- * Both memories are erased when we are done so the search behavior is free to pick the next
- * machine, which is the handshake every Touhou Little Maid block task uses.
+ * {@code TARGET_POS} is the machine, {@code WALK_TARGET} is a standable block near it — they are
+ * deliberately different, so this must not treat a mismatched walk target as "give up".
  */
 public class MaidGtWorkTask extends Behavior<EntityMaid> {
-    /** Machines are solid, so the maid stops next to them rather than on them. */
-    private static final double CLOSE_ENOUGH = 3.5D;
-
     private final Set<GtJob> jobs;
     private final GtTaskContext context;
 
@@ -44,15 +40,17 @@ public class MaidGtWorkTask extends Behavior<EntityMaid> {
         Brain<EntityMaid> brain = maid.getBrain();
         return brain.getMemory(InitEntities.TARGET_POS.get()).map(target -> {
             Vec3 targetPosition = target.currentPosition();
-            if (maid.distanceToSqr(targetPosition) <= CLOSE_ENOUGH * CLOSE_ENOUGH) {
+            double reach = MaidOdysseyConfig.workReach() + 0.75D;
+            if (maid.distanceToSqr(targetPosition) <= reach * reach) {
                 return true;
             }
-            // Still walking. If the walk target got dropped we will never arrive, so let the
-            // search behavior start over.
-            Optional<WalkTarget> walkTarget = brain.getMemory(MemoryModuleType.WALK_TARGET);
-            if (walkTarget.isEmpty() || !walkTarget.get().getTarget().currentPosition().equals(targetPosition)) {
-                brain.eraseMemory(InitEntities.TARGET_POS.get());
+            if (maid.getNavigation().isInProgress() || brain.hasMemoryValue(MemoryModuleType.WALK_TARGET)) {
+                return false;
             }
+            BlockPos pos = target.currentBlockPosition();
+            MaidReporter.problem(maid, pos, "message.maid_odyssey.unreachable");
+            context.ignore(pos, level.getGameTime(), MaidOdysseyConfig.unreachableRetryDelay());
+            brain.eraseMemory(InitEntities.TARGET_POS.get());
             return false;
         }).orElse(false);
     }

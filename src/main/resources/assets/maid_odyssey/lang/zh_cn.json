@@ -27,6 +27,7 @@
 
   "message.maid_odyssey.gt.not_installed": "没有安装格雷科技，这项工作没有可以照看的机器。",
   "message.maid_odyssey.gt.api_mismatch": "无法与格雷科技通信：%s",
+  "message.maid_odyssey.unreachable": "我走不到足够近的地方来操作这台机器。",
 
   "message.maid_odyssey.tool.wrench": "扳手",
   "message.maid_odyssey.tool.screwdriver": "螺丝刀",

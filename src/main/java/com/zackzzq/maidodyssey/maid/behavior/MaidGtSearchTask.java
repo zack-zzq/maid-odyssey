@@ -1,6 +1,5 @@
 package com.zackzzq.maidodyssey.maid.behavior;
 
-import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
@@ -10,34 +9,49 @@ import com.zackzzq.maidodyssey.gt.GtJob;
 import com.zackzzq.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
 /**
- * Looks for a GregTech machine that needs attention and walks the maid over to it.
+ * Looks for a GregTech machine that needs attention and walks the maid to a standable block
+ * within reach of it.
  * <p>
- * The base class handles the spiral scan, the work range and the check throttle; all this adds is
- * the "does this block need work" test plus reachability of the blocks <em>around</em> the machine,
- * since a machine block itself can never be stood on.
+ * The parent always sets the walk target to the machine itself, which a roof-mounted muffler
+ * hatch is not: the maid cannot stand on it, and the 3×3×2 neighbourhood around it is usually
+ * more of the multiblock. After the scan we rewrite the walk target to the standing spot we
+ * already found, while leaving {@code TARGET_POS} pointing at the machine so the work behavior
+ * knows what to service.
  */
 public class MaidGtSearchTask extends MaidMoveToBlockTask {
     private final Set<GtJob> jobs;
     private final GtTaskContext context;
+    private final float movementSpeed;
+
+    /** Standing spot of the machine the scan just picked, or null. */
+    @Nullable
+    private BlockPos lastStandingSpot;
 
     public MaidGtSearchTask(Set<GtJob> jobs, GtTaskContext context, float movementSpeed) {
-        super(movementSpeed, IMaidTask.VERTICAL_SEARCH_RANGE);
+        super(movementSpeed, MaidOdysseyConfig.verticalSearchRange());
         this.jobs = jobs;
         this.context = context;
+        this.movementSpeed = movementSpeed;
     }
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
         context.prune(gameTime);
+        lastStandingSpot = null;
         if (!GtCompat.isLoaded()) {
             MaidReporter.problem(maid, null, "message.maid_odyssey.gt.not_installed");
             return;
         }
         searchForDestination(level, maid);
+        if (lastStandingSpot != null) {
+            BehaviorUtils.setWalkAndLookTargetMemories(maid, lastStandingSpot, movementSpeed, 0);
+        }
     }
 
     @Override
@@ -50,16 +64,48 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
 
     @Override
     protected boolean checkPathReach(EntityMaid maid, MaidPathFindingBFS pathFinding, BlockPos pos) {
-        for (int x = -1; x <= 1; x++) {
-            for (int y = 0; y <= 1; y++) {
-                for (int z = -1; z <= 1; z++) {
-                    if (pathFinding.canPathReach(pos.offset(x, y, z))) {
-                        return true;
+        BlockPos spot = findStandingSpot(pathFinding, maid, pos);
+        if (spot == null) {
+            lastStandingSpot = null;
+            return false;
+        }
+        lastStandingSpot = spot;
+        return true;
+    }
+
+    /**
+     * Closest block the maid can actually stand in that is still within {@code workReach} of the
+     * machine. Searching includes the ground several blocks below, which is where she ends up for
+     * a muffler hatch sitting on the roof of a blast furnace.
+     */
+    @Nullable
+    static BlockPos findStandingSpot(MaidPathFindingBFS pathFinding, EntityMaid maid, BlockPos machine) {
+        int reach = MaidOdysseyConfig.workReach();
+        BlockPos maidPos = maid.blockPosition();
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (int y = -reach; y <= 1; y++) {
+            for (int x = -reach; x <= reach; x++) {
+                for (int z = -reach; z <= reach; z++) {
+                    if (x == 0 && y == 0 && z == 0) {
+                        continue;
+                    }
+                    if (x * x + y * y + z * z > reach * reach) {
+                        continue;
+                    }
+                    BlockPos candidate = machine.offset(x, y, z);
+                    if (!pathFinding.canPathReach(candidate)) {
+                        continue;
+                    }
+                    double distance = candidate.distSqr(maidPos);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = candidate.immutable();
                     }
                 }
             }
         }
-        return false;
+        return best;
     }
 
     @Override

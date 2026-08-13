@@ -20,7 +20,10 @@ public final class MaidOdysseyConfig {
     public final ForgeConfigSpec.IntValue chatReportCooldown;
 
     public final ForgeConfigSpec.IntValue maxSearchRadius;
+    public final ForgeConfigSpec.IntValue verticalSearchRange;
+    public final ForgeConfigSpec.IntValue workReach;
     public final ForgeConfigSpec.IntValue blockedRetryDelay;
+    public final ForgeConfigSpec.IntValue unreachableRetryDelay;
 
     public final ForgeConfigSpec.EnumValue<AshHandling> ashHandling;
 
@@ -57,10 +60,26 @@ public final class MaidOdysseyConfig {
                         "The effective radius is min(this value, the maid's own work range).",
                         "Lower it if you see lag with very large work ranges.")
                 .defineInRange("maxSearchRadius", 24, 1, 64);
+        verticalSearchRange = builder
+                .comment("How many blocks above and below her home point the maid looks.",
+                        "Muffler hatches sit on the roof of a multiblock, three blocks above the",
+                        "controller on an Electric Blast Furnace, so this needs headroom.")
+                .defineInRange("verticalSearchRange", 8, 1, 16);
+        workReach = builder
+                .comment("How far the maid can service a machine from, in blocks.",
+                        "Machine blocks are solid, and a roof mounted muffler hatch usually has no",
+                        "standable spot next to it at all, so she works from the ground below.",
+                        "Raise this for very large multiblocks; lower it if you dislike her",
+                        "reaching through a wall.")
+                .defineInRange("workReach", 5, 1, 16);
         blockedRetryDelay = builder
                 .comment("When a machine cannot be serviced (backpack full, tool missing, ...),",
                         "the maid ignores that block for this many ticks before trying again.")
                 .defineInRange("blockedRetryDelay", 600, 20, 24000);
+        unreachableRetryDelay = builder
+                .comment("When the maid gives up walking to a machine, she ignores it for this",
+                        "many ticks. Stops her ping-ponging towards something she cannot reach.")
+                .defineInRange("unreachableRetryDelay", 200, 20, 24000);
         builder.pop();
 
         builder.comment("Muffler hatch ash cleaning.").push("muffler");
@@ -105,8 +124,20 @@ public final class MaidOdysseyConfig {
         return INSTANCE.maxSearchRadius.get();
     }
 
+    public static int verticalSearchRange() {
+        return INSTANCE.verticalSearchRange.get();
+    }
+
+    public static int workReach() {
+        return INSTANCE.workReach.get();
+    }
+
     public static int blockedRetryDelay() {
         return INSTANCE.blockedRetryDelay.get();
+    }
+
+    public static int unreachableRetryDelay() {
+        return INSTANCE.unreachableRetryDelay.get();
     }
 
     public static AshHandling ashHandling() {
