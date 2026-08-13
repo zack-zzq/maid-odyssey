@@ -32,7 +32,15 @@ public final class AshEating {
     }
 
     public static boolean isBusy(EntityMaid maid) {
-        return SESSIONS.containsKey(maid.getUUID());
+        Session session = SESSIONS.get(maid.getUUID());
+        if (session == null) {
+            return false;
+        }
+        if (maid.level().getGameTime() - session.startedAt > ANIMATION_TICKS + 20) {
+            SESSIONS.remove(maid.getUUID());
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -72,7 +80,7 @@ public final class AshEating {
         int count = ash.getCount();
         ItemStack crumb = ash.copy();
         crumb.setCount(1);
-        SESSIONS.put(maid.getUUID(), new Session(crumb, ANIMATION_TICKS));
+        SESSIONS.put(maid.getUUID(), new Session(crumb, ANIMATION_TICKS, maid.level().getGameTime()));
         maid.getNavigation().stop();
         maid.swing(InteractionHand.MAIN_HAND);
         maid.spawnItemParticles(crumb, 8);
@@ -131,11 +139,13 @@ public final class AshEating {
 
     private static final class Session {
         private final ItemStack crumb;
+        private final long startedAt;
         private int ticksLeft;
 
-        private Session(ItemStack crumb, int ticksLeft) {
+        private Session(ItemStack crumb, int ticksLeft, long startedAt) {
             this.crumb = crumb;
             this.ticksLeft = ticksLeft;
+            this.startedAt = startedAt;
         }
     }
 }

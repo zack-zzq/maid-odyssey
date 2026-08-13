@@ -25,20 +25,17 @@ import java.util.Set;
 /**
  * Runs once the maid is within reach of the machine picked by {@link MaidGtSearchTask}.
  * <p>
- * {@code TARGET_POS} is the machine, {@code WALK_TARGET} is a standable block near it — they are
- * deliberately different, so this must not treat a mismatched walk target as "give up".
- * After she plants her feet she turns to face the hatch, then swings.
+ * She stops, lets the vanilla look AI turn her toward the hatch, then works. Head pitch is left
+ * to {@code LookControl} so a roof muffler does not make her nod every tick.
  */
 public class MaidGtWorkTask extends Behavior<EntityMaid> {
-    private static final int SETTLE_TICKS = 8;
-    private static final int FORCE_WORK_TICKS = 20;
-    private static final int MAX_DURATION = 40;
-    private static final double FACING_DOT = 0.82D;
+    private static final int SETTLE_TICKS = 10;
+    private static final int MAX_DURATION = 30;
 
     private final Set<GtJob> jobs;
     private final GtTaskContext context;
     private boolean finished;
-    private int facingTicks;
+    private int settleTicks;
 
     public MaidGtWorkTask(Set<GtJob> jobs, GtTaskContext context) {
         super(ImmutableMap.of(InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_PRESENT), MAX_DURATION);
@@ -72,46 +69,45 @@ public class MaidGtWorkTask extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long gameTime) {
         finished = false;
-        facingTicks = 0;
+        settleTicks = 0;
         maid.getNavigation().stop();
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-        maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresent(target ->
-                faceBlock(maid, target.currentBlockPosition()));
+        lookAtMachine(maid);
     }
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long gameTime) {
-        return !finished && !AshEating.isBusy(maid)
-                && maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get());
+        return !finished && maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get());
     }
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long gameTime) {
-        maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresent(target -> {
-            BlockPos pos = target.currentBlockPosition();
-            faceBlock(maid, pos);
-            facingTicks++;
-            if (facingTicks < SETTLE_TICKS) {
-                return;
-            }
-            if (facingTicks < FORCE_WORK_TICKS && !isFacing(maid, pos)) {
-                return;
-            }
-            if (workOn(level, maid, pos)) {
-                context.ignore(pos, gameTime, MaidOdysseyConfig.blockedRetryDelay());
-            }
-            finished = true;
-            maid.getBrain().eraseMemory(InitEntities.TARGET_POS.get());
-            maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-        });
+        settleTicks++;
+        if (settleTicks >= SETTLE_TICKS) {
+            tryWork(level, maid, gameTime);
+        }
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long gameTime) {
         if (!finished) {
-            maid.getBrain().eraseMemory(InitEntities.TARGET_POS.get());
-            maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+            tryWork(level, maid, gameTime);
         }
+    }
+
+    private void tryWork(ServerLevel level, EntityMaid maid, long gameTime) {
+        if (finished) {
+            return;
+        }
+        maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresent(target -> {
+            BlockPos pos = target.currentBlockPosition();
+            if (workOn(level, maid, pos)) {
+                context.ignore(pos, gameTime, MaidOdysseyConfig.blockedRetryDelay());
+            }
+        });
+        finished = true;
+        maid.getBrain().eraseMemory(InitEntities.TARGET_POS.get());
+        maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
     }
 
     /** @return true when the machine could not be fully serviced. */
@@ -130,24 +126,19 @@ public class MaidGtWorkTask extends Behavior<EntityMaid> {
         return false;
     }
 
-    static void faceBlock(EntityMaid maid, BlockPos pos) {
-        Vec3 center = Vec3.atCenterOf(pos);
-        maid.getLookControl().setLookAt(center.x, center.y, center.z);
-        maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
-        float yRot = yawTowards(maid, center);
-        maid.setYRot(yRot);
-        maid.setYHeadRot(yRot);
-        maid.setYBodyRot(yRot);
-    }
-
-    private static boolean isFacing(EntityMaid maid, BlockPos pos) {
-        Vec3 to = Vec3.atCenterOf(pos).subtract(maid.getEyePosition()).normalize();
-        return maid.getLookAngle().dot(to) >= FACING_DOT;
-    }
-
-    private static float yawTowards(EntityMaid maid, Vec3 target) {
-        double dx = target.x - maid.getX();
-        double dz = target.z - maid.getZ();
-        return (float) (Mth.atan2(dz, dx) * (180.0D / Math.PI)) - 90.0F;
+    private static void lookAtMachine(EntityMaid maid) {
+        maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresent(target -> {
+            BlockPos pos = target.currentBlockPosition();
+            maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
+            Vec3 aim = Vec3.atBottomCenterOf(pos);
+            double dx = aim.x - maid.getX();
+            double dz = aim.z - maid.getZ();
+            if (dx * dx + dz * dz < 1.0E-4D) {
+                return;
+            }
+            float yaw = (float) (Mth.atan2(dz, dx) * (180.0D / Math.PI)) - 90.0F;
+            maid.setYBodyRot(yaw);
+            maid.setYRot(yaw);
+        });
     }
 }
