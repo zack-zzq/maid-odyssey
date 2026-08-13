@@ -33,7 +33,9 @@ jobs:
           echo "mod_version=${tag#v}" >> "$GITHUB_OUTPUT"
 
       - name: Build
-        run: ./gradlew build --stacktrace --warning-mode=none -Pmod_version="${{ steps.version.outputs.mod_version }}"
+        run: |
+          chmod +x gradlew
+          ./gradlew build --stacktrace --warning-mode=none -Pmod_version="${{ steps.version.outputs.mod_version }}"
         env:
           GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false
 
