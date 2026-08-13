@@ -2,6 +2,7 @@ package com.ziqizhu.maidodyssey.maid;
 
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
+import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.ziqizhu.maidodyssey.MaidOdyssey;
 import com.ziqizhu.maidodyssey.gt.GtCompat;
@@ -21,5 +22,10 @@ public class LittleMaidPlugin implements ILittleMaid {
         manager.add(new TaskMaintenanceHatch());
         manager.add(new TaskGtHousekeeping());
         MaidOdyssey.LOGGER.info("Registered GregTech maid tasks (GregTech present: {})", GtCompat.isLoaded());
+    }
+
+    @Override
+    public void addExtraMaidBrain(ExtraMaidBrainManager manager) {
+        manager.addExtraMaidBrain(new HazardAvoidBrain());
     }
 }

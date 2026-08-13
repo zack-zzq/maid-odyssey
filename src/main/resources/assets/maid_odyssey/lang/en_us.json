@@ -28,6 +28,7 @@
   "message.maid_odyssey.gt.not_installed": "GregTech Modern is not installed, so there is nothing for me to look after.",
   "message.maid_odyssey.gt.api_mismatch": "I cannot talk to GregTech Modern: %s",
   "message.maid_odyssey.unreachable": "I cannot get close enough to work on this machine.",
+  "message.maid_odyssey.hazard.flee": "That spot would poison or burn me, I am staying clear.",
 
   "message.maid_odyssey.tool.wrench": "Wrench",
   "message.maid_odyssey.tool.screwdriver": "Screwdriver",

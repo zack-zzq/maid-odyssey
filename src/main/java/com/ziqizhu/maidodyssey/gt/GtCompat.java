@@ -2,6 +2,7 @@ package com.ziqizhu.maidodyssey.gt;
 
 import com.ziqizhu.maidodyssey.MaidOdyssey;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -38,7 +39,17 @@ public final class GtCompat {
     private static final String CLASS_TOOL_TYPE = "com.gregtechceu.gtceu.api.item.tool.GTToolType";
     private static final ResourceLocation DUCT_TAPE_ID = new ResourceLocation(GTCEU_ID, "duct_tape");
 
+    private static final String CLASS_HEAT_CONTAINER = "com.gtolib.api.capability.IHeatContainer";
+    private static final String CLASS_HEAT_HANDLER = "com.gtolib.api.machine.heat.HeatHandler";
+    private static final Set<String> KNOWN_HEAT_BLOCK_PATHS = Set.of(
+            "heater", "electric_heater", "mana_heater",
+            "cooler", "boiler", "alchemy_cauldron",
+            "heat_hatch", "advanced_heat_hatch"
+    );
+
     private static final Map<String, Optional<Method>> METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Optional<Field>> FIELD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Optional<Field>> HEAT_FIELD_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Boolean> TYPE_CACHE = new ConcurrentHashMap<>();
 
     private static volatile boolean bootstrapped;
@@ -49,6 +60,8 @@ public final class GtCompat {
     private static Method toolTypeIs;
     private static Method toolHelperCanUse;
     private static Method toolHelperDamage;
+    private static Class<?> heatContainerClass;
+    private static Class<?> heatHandlerClass;
     private static String bindingProblem;
 
     private GtCompat() {
@@ -83,10 +96,18 @@ public final class GtCompat {
                 getMachineStatic = staticMethod(metaMachineClass, "getMachine", BlockGetter.class, BlockPos.class);
             }
 
+            // Optional: GTOCore heat lives in closed gtolib. Missing classes must not fail the
+            // muffler / maintenance binding — those still work without GTOCore.
+            heatContainerClass = findClass(CLASS_HEAT_CONTAINER);
+            heatHandlerClass = findClass(CLASS_HEAT_HANDLER);
+
             Class<?> toolTypeClass = findClass(CLASS_TOOL_TYPE);
             Class<?> toolHelperClass = findClass(CLASS_TOOL_HELPER);
             if (toolTypeClass == null || toolHelperClass == null) {
                 bindingProblem = "GregTech tool API not found (GTToolType / ToolHelper)";
+                MaidOdyssey.LOGGER.info("GregTech binding ready (problem: {}, heat: {})",
+                        bindingProblem,
+                        heatContainerClass != null || heatHandlerClass != null ? "present" : "absent");
                 return;
             }
 
@@ -114,7 +135,10 @@ public final class GtCompat {
             } else if (toolHelperIs == null && toolTypeIs == null) {
                 bindingProblem = "ToolHelper#is not found, falling back to item tags";
             }
-            MaidOdyssey.LOGGER.info("GregTech binding ready (problem: {})", bindingProblem == null ? "none" : bindingProblem);
+
+            MaidOdyssey.LOGGER.info("GregTech binding ready (problem: {}, heat: {})",
+                    bindingProblem == null ? "none" : bindingProblem,
+                    heatContainerClass != null || heatHandlerClass != null ? "present" : "absent");
         }
     }
 
@@ -205,6 +229,111 @@ public final class GtCompat {
             }
         }
         return false;
+    }
+
+    /**
+     * Exhaust leaves through this face. Electric blast furnace mufflers usually face up.
+     * Falls back to {@link Direction#UP} when the machine has no facing method.
+     */
+    public static Direction mufflerExhaustFacing(Object machine) {
+        Direction facing = getFrontFacing(machine);
+        return facing == null ? Direction.UP : facing;
+    }
+
+    @Nullable
+    public static Direction getFrontFacing(Object machine) {
+        Method getter = method(machine.getClass(), "getFrontFacing");
+        if (getter == null) {
+            return null;
+        }
+        Object value = invokeQuiet(getter, machine);
+        return value instanceof Direction direction ? direction : null;
+    }
+
+    // ------------------------------------------------------------------ GTO heat
+
+    /**
+     * Cheap filter: only GregTech / GTOCore blocks can be mufflers or heat sources.
+     */
+    public static boolean isMaybeHazardBlock(BlockState state) {
+        bootstrap();
+        if (metaMachineBlockClass != null && metaMachineBlockClass.isInstance(state.getBlock())) {
+            return true;
+        }
+        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+        return id != null && (GTCEU_ID.equals(id.getNamespace()) || "gtocore".equals(id.getNamespace()));
+    }
+
+    public static boolean isKnownHeatMachineBlock(BlockState state) {
+        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+        return id != null && "gtocore".equals(id.getNamespace()) && KNOWN_HEAT_BLOCK_PATHS.contains(id.getPath());
+    }
+
+    public static boolean isHeaterLike(Object machine) {
+        Class<?> type = machine.getClass();
+        return hasType(type, "HeaterMachine")
+                || hasType(type, "ElectricHeaterMachine")
+                || hasType(type, "ManaHeaterMachine");
+    }
+
+    /**
+     * The heat storage on this machine, or null when it has none / gtolib is missing.
+     * Pipes implement the same interface but report temperature 0.
+     */
+    @Nullable
+    public static Object findHeatContainer(@Nullable Object machine, @Nullable BlockEntity blockEntity) {
+        bootstrap();
+        Object found = findHeatContainerOn(machine);
+        return found != null ? found : findHeatContainerOn(blockEntity);
+    }
+
+    @Nullable
+    private static Object findHeatContainerOn(@Nullable Object owner) {
+        if (owner == null) {
+            return null;
+        }
+        if (isHeatContainer(owner)) {
+            return owner;
+        }
+        Object viaGetter = invokeNamed(owner, "getHeatContainer");
+        if (viaGetter == null) {
+            viaGetter = invokeNamed(owner, "getHeatHandler");
+        }
+        if (isHeatContainer(viaGetter)) {
+            return viaGetter;
+        }
+        Object viaField = readHeatField(owner);
+        return isHeatContainer(viaField) ? viaField : null;
+    }
+
+    private static boolean isHeatContainer(@Nullable Object value) {
+        if (value == null) {
+            return false;
+        }
+        if (heatContainerClass != null && heatContainerClass.isInstance(value)) {
+            return true;
+        }
+        if (heatHandlerClass != null && heatHandlerClass.isInstance(value)) {
+            return true;
+        }
+        Class<?> type = value.getClass();
+        return hasType(type, "IHeatContainer") || hasType(type, "HeatHandler");
+    }
+
+    /**
+     * Kelvin. {@link Double#NaN} when the value cannot be read (caller should treat that as unknown,
+     * not as ambient).
+     */
+    public static double getHeatTemperature(@Nullable Object container) {
+        if (container == null) {
+            return Double.NaN;
+        }
+        Method getter = method(container.getClass(), "getTemperature");
+        if (getter == null) {
+            return Double.NaN;
+        }
+        Object value = invokeQuiet(getter, container);
+        return value instanceof Number number ? number.doubleValue() : Double.NaN;
     }
 
     // ------------------------------------------------------------------ maintenance hatch
@@ -396,6 +525,100 @@ public final class GtCompat {
             reportReflectionFailure(method, t);
             return null;
         }
+    }
+
+    /**
+     * Same as {@link #invoke} but does not record a binding problem. Heat lookup is optional and
+     * must not poison the muffler / maintenance error message.
+     */
+    @Nullable
+    private static Object invokeQuiet(Method method, @Nullable Object target, Object... arguments) {
+        try {
+            return method.invoke(target, arguments);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Object invokeNamed(Object owner, String name) {
+        Method getter = method(owner.getClass(), name);
+        return getter == null ? null : invokeQuiet(getter, owner);
+    }
+
+    @Nullable
+    private static Object readHeatField(Object owner) {
+        Optional<Field> cached = HEAT_FIELD_CACHE.computeIfAbsent(owner.getClass(), GtCompat::findHeatField);
+        if (cached.isEmpty()) {
+            return null;
+        }
+        try {
+            return cached.get().get(owner);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static Optional<Field> findHeatField(Class<?> type) {
+        Field named = declaredField(type, "heatContainer");
+        if (named == null) {
+            named = declaredField(type, "heatHandler");
+        }
+        if (named != null && looksLikeHeatType(named.getType())) {
+            return Optional.of(named);
+        }
+        for (Class<?> current = type; current != null && current != Object.class; current = current.getSuperclass()) {
+            Field[] fields;
+            try {
+                fields = current.getDeclaredFields();
+            } catch (Throwable t) {
+                continue;
+            }
+            for (Field field : fields) {
+                if (!looksLikeHeatType(field.getType())) {
+                    continue;
+                }
+                try {
+                    field.setAccessible(true);
+                } catch (Throwable ignored) {
+                    // continue anyway; get() may still work
+                }
+                return Optional.of(field);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static boolean looksLikeHeatType(Class<?> fieldType) {
+        if (heatContainerClass != null && heatContainerClass.isAssignableFrom(fieldType)) {
+            return true;
+        }
+        if (heatHandlerClass != null && heatHandlerClass.isAssignableFrom(fieldType)) {
+            return true;
+        }
+        String simple = fieldType.getSimpleName();
+        return "IHeatContainer".equals(simple) || "HeatHandler".equals(simple);
+    }
+
+    @Nullable
+    private static Field declaredField(Class<?> owner, String name) {
+        String key = owner.getName() + '#' + name;
+        return FIELD_CACHE.computeIfAbsent(key, ignored -> {
+            for (Class<?> current = owner; current != null && current != Object.class; current = current.getSuperclass()) {
+                try {
+                    Field found = current.getDeclaredField(name);
+                    try {
+                        found.setAccessible(true);
+                    } catch (Throwable ignoredAccess) {
+                        // get() may still work on a public field
+                    }
+                    return Optional.of(found);
+                } catch (Throwable t) {
+                    // try superclass
+                }
+            }
+            return Optional.empty();
+        }).orElse(null);
     }
 
     private static boolean invokeVoid(Method method, @Nullable Object target, Object... arguments) {

@@ -31,6 +31,14 @@ public final class MaidOdysseyConfig {
     public final ForgeConfigSpec.BooleanValue resetMaintenanceTimer;
     public final ForgeConfigSpec.IntValue toolDurabilityReserve;
 
+    public final ForgeConfigSpec.BooleanValue avoidHazards;
+    public final ForgeConfigSpec.IntValue mufflerAvoidRadius;
+    public final ForgeConfigSpec.IntValue mufflerExhaustLength;
+    public final ForgeConfigSpec.IntValue heatAvoidRadius;
+    public final ForgeConfigSpec.IntValue heatDangerKelvin;
+    public final ForgeConfigSpec.IntValue hazardScanRadius;
+    public final ForgeConfigSpec.IntValue hazardScanInterval;
+
     static {
         Pair<MaidOdysseyConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(MaidOdysseyConfig::new);
         INSTANCE = pair.getLeft();
@@ -102,6 +110,34 @@ public final class MaidOdysseyConfig {
                         "remaining durability is at or below this number, so your good tools survive.")
                 .defineInRange("toolDurabilityReserve", 0, 0, 1000);
         builder.pop();
+
+        builder.comment("Keep the maid out of muffler exhaust and GTO heat.").push("hazard");
+        avoidHazards = builder
+                .comment("When walking or wandering, skip muffler exhaust and hot machines.")
+                .define("avoidHazards", true);
+        mufflerAvoidRadius = builder
+                .comment("Chebyshev radius around a muffler hatch the maid will not stand in,",
+                        "including the block directly above it.")
+                .defineInRange("mufflerAvoidRadius", 1, 0, 8);
+        mufflerExhaustLength = builder
+                .comment("How many blocks along the muffler's front face count as exhaust.",
+                        "GTO also checks three air blocks in front of the hatch.")
+                .defineInRange("mufflerExhaustLength", 2, 0, 8);
+        heatAvoidRadius = builder
+                .comment("Chebyshev radius around a hot heat container (heater, heated boiler,",
+                        "cauldron, heat hatch, ...).")
+                .defineInRange("heatAvoidRadius", 2, 1, 8);
+        heatDangerKelvin = builder
+                .comment("Treat an IHeatContainer as dangerous at or above this temperature (Kelvin).",
+                        "Ambient is about 293 K; cauldron recipes start around 340 K.")
+                .defineInRange("heatDangerKelvin", 340, 300, 4000);
+        hazardScanRadius = builder
+                .comment("How far around the maid to look for hazards, in blocks.")
+                .defineInRange("hazardScanRadius", 16, 4, 48);
+        hazardScanInterval = builder
+                .comment("How often the maid rescans nearby machines for hazards, in ticks.")
+                .defineInRange("hazardScanInterval", 10, 1, 200);
+        builder.pop();
     }
 
     public static boolean chatReportEnabled() {
@@ -154,5 +190,33 @@ public final class MaidOdysseyConfig {
 
     public static int toolDurabilityReserve() {
         return INSTANCE.toolDurabilityReserve.get();
+    }
+
+    public static boolean avoidHazards() {
+        return INSTANCE.avoidHazards.get();
+    }
+
+    public static int mufflerAvoidRadius() {
+        return INSTANCE.mufflerAvoidRadius.get();
+    }
+
+    public static int mufflerExhaustLength() {
+        return INSTANCE.mufflerExhaustLength.get();
+    }
+
+    public static int heatAvoidRadius() {
+        return INSTANCE.heatAvoidRadius.get();
+    }
+
+    public static int heatDangerKelvin() {
+        return INSTANCE.heatDangerKelvin.get();
+    }
+
+    public static int hazardScanRadius() {
+        return INSTANCE.hazardScanRadius.get();
+    }
+
+    public static int hazardScanInterval() {
+        return INSTANCE.hazardScanInterval.get();
     }
 }

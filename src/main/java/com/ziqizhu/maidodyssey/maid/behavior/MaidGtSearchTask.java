@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBF
 import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
 import com.ziqizhu.maidodyssey.gt.GtCompat;
 import com.ziqizhu.maidodyssey.gt.GtJob;
+import com.ziqizhu.maidodyssey.hazard.HazardTracker;
 import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -94,6 +95,10 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
                         continue;
                     }
                     BlockPos candidate = machine.offset(x, y, z);
+                    if (maid.level() instanceof ServerLevel serverLevel
+                            && HazardTracker.isUnsafeStanding(serverLevel, maid, candidate, machine)) {
+                        continue;
+                    }
                     if (!pathFinding.canPathReach(candidate)) {
                         continue;
                     }

@@ -1,6 +1,7 @@
 package com.ziqizhu.maidodyssey;
 
 import com.mojang.logging.LogUtils;
+import com.ziqizhu.maidodyssey.hazard.HazardTracker;
 import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,6 +18,7 @@ public final class MaidOdyssey {
     public MaidOdyssey() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MaidOdysseyConfig.SPEC);
         MinecraftForge.EVENT_BUS.register(MaidReporter.class);
+        MinecraftForge.EVENT_BUS.register(HazardTracker.class);
     }
 
     public static ResourceLocation id(String path) {
