@@ -1,0 +1,28 @@
+# gradle
+.gradle/
+build/
+out/
+classes/
+
+# eclipse / idea / vscode
+*.launch
+.settings/
+.metadata/
+bin/
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# forge / minecraft dev environment
+run/
+runs/
+run-data/
+logs/
+
+# local scratch: reference checkouts pulled while researching the TLM API
+.tmpdl/
+tlm-ref/
+tlm-docs/
+libs-local/

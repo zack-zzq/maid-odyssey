@@ -1,0 +1,37 @@
+{
+  "task.maid_odyssey.clean_muffler": "清理消声仓",
+  "task.maid_odyssey.clean_muffler.desc": "清空附近格雷科技消声仓中积累的灰烬。",
+  "task.maid_odyssey.clean_muffler.desc_2": "灰烬会收进女仆背包，也可在配置中改为直接销毁。",
+  "task.maid_odyssey.clean_muffler.condition.has_room": "背包有剩余空间",
+
+  "task.maid_odyssey.maintenance_hatch": "维护维护仓",
+  "task.maid_odyssey.maintenance_hatch.desc": "修复附近损坏的格雷科技维护仓。",
+  "task.maid_odyssey.maintenance_hatch.desc_2": "请在女仆背包内放入扳手、螺丝刀、橡胶锤、锤子、剪线钳与撬棍。",
+  "task.maid_odyssey.maintenance_hatch.condition.has_tool": "携带了维修工具",
+
+  "task.maid_odyssey.gt_housekeeping": "工厂维护员",
+  "task.maid_odyssey.gt_housekeeping.desc": "同时清理消声仓灰烬并修复维护仓。",
+  "task.maid_odyssey.gt_housekeeping.desc_2": "需要同时准备维修工具和放灰烬的空间。",
+  "task.maid_odyssey.gt_housekeeping.condition.has_tool": "携带了维修工具",
+
+  "message.maid_odyssey.prefix": "女仆奥德赛",
+  "message.maid_odyssey.list_separator": "、",
+
+  "message.maid_odyssey.muffler.cleaned": "从消声仓中收走了 %s 个灰烬。",
+  "message.maid_odyssey.muffler.voided": "清理并销毁了消声仓中的 %s 个灰烬。",
+  "message.maid_odyssey.muffler.backpack_full": "背包已经满了，没办法再把这个消声仓里的灰烬取出来。",
+
+  "message.maid_odyssey.maintenance.repaired": "修好了这个维护仓的 %s 处故障。",
+  "message.maid_odyssey.maintenance.duct_taped": "用胶带临时糊住了 %s 处故障。",
+  "message.maid_odyssey.maintenance.missing_tools": "没有合适的工具来修这个维护仓，还缺少：%s",
+
+  "message.maid_odyssey.gt.not_installed": "没有安装格雷科技，这项工作没有可以照看的机器。",
+  "message.maid_odyssey.gt.api_mismatch": "无法与格雷科技通信：%s",
+
+  "message.maid_odyssey.tool.wrench": "扳手",
+  "message.maid_odyssey.tool.screwdriver": "螺丝刀",
+  "message.maid_odyssey.tool.soft_mallet": "橡胶锤",
+  "message.maid_odyssey.tool.hard_hammer": "锤子",
+  "message.maid_odyssey.tool.wire_cutter": "剪线钳",
+  "message.maid_odyssey.tool.crowbar": "撬棍"
+}

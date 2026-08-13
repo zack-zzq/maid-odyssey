@@ -1,0 +1,37 @@
+{
+  "task.maid_odyssey.clean_muffler": "Muffler Cleaning",
+  "task.maid_odyssey.clean_muffler.desc": "Empties the ash out of nearby GregTech muffler hatches.",
+  "task.maid_odyssey.clean_muffler.desc_2": "The ash goes into her backpack, or is destroyed if configured that way.",
+  "task.maid_odyssey.clean_muffler.condition.has_room": "Backpack has free space",
+
+  "task.maid_odyssey.maintenance_hatch": "Hatch Maintenance",
+  "task.maid_odyssey.maintenance_hatch.desc": "Repairs broken GregTech maintenance hatches nearby.",
+  "task.maid_odyssey.maintenance_hatch.desc_2": "Put a wrench, screwdriver, soft mallet, hard hammer, wire cutter and crowbar in her backpack.",
+  "task.maid_odyssey.maintenance_hatch.condition.has_tool": "Carrying a maintenance tool",
+
+  "task.maid_odyssey.gt_housekeeping": "Factory Housekeeping",
+  "task.maid_odyssey.gt_housekeeping.desc": "Cleans muffler hatches and repairs maintenance hatches, both at once.",
+  "task.maid_odyssey.gt_housekeeping.desc_2": "Needs tool room in her backpack for both jobs.",
+  "task.maid_odyssey.gt_housekeeping.condition.has_tool": "Carrying a maintenance tool",
+
+  "message.maid_odyssey.prefix": "Maid Odyssey",
+  "message.maid_odyssey.list_separator": ", ",
+
+  "message.maid_odyssey.muffler.cleaned": "Collected %s ash from the muffler hatch.",
+  "message.maid_odyssey.muffler.voided": "Threw away %s ash from the muffler hatch.",
+  "message.maid_odyssey.muffler.backpack_full": "My backpack is full, I cannot take any more ash out of this muffler hatch.",
+
+  "message.maid_odyssey.maintenance.repaired": "Fixed %s maintenance problem(s) on this hatch.",
+  "message.maid_odyssey.maintenance.duct_taped": "Patched %s maintenance problem(s) with duct tape.",
+  "message.maid_odyssey.maintenance.missing_tools": "I have no tool for this maintenance hatch, still missing: %s",
+
+  "message.maid_odyssey.gt.not_installed": "GregTech Modern is not installed, so there is nothing for me to look after.",
+  "message.maid_odyssey.gt.api_mismatch": "I cannot talk to GregTech Modern: %s",
+
+  "message.maid_odyssey.tool.wrench": "Wrench",
+  "message.maid_odyssey.tool.screwdriver": "Screwdriver",
+  "message.maid_odyssey.tool.soft_mallet": "Soft Mallet",
+  "message.maid_odyssey.tool.hard_hammer": "Hammer",
+  "message.maid_odyssey.tool.wire_cutter": "Wire Cutter",
+  "message.maid_odyssey.tool.crowbar": "Crowbar"
+}
