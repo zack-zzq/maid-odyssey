@@ -3,6 +3,7 @@ package com.ziqizhu.maidodyssey.maid.behavior;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
+import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
 import com.ziqizhu.maidodyssey.gt.GtCompat;
 import com.ziqizhu.maidodyssey.gt.GtJob;
@@ -12,6 +13,8 @@ import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
+import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
@@ -62,6 +65,9 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
         searchForDestination(level, maid);
         if (lastStandingSpot != null) {
             BehaviorUtils.setWalkAndLookTargetMemories(maid, lastStandingSpot, movementSpeed, 0);
+            maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresent(target ->
+                    maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET,
+                            new BlockPosTracker(target.currentBlockPosition())));
         }
     }
 
