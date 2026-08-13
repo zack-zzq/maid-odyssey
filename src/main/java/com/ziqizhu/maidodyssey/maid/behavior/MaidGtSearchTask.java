@@ -7,6 +7,7 @@ import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
 import com.ziqizhu.maidodyssey.gt.GtCompat;
 import com.ziqizhu.maidodyssey.gt.GtJob;
 import com.ziqizhu.maidodyssey.hazard.HazardTracker;
+import com.ziqizhu.maidodyssey.maid.work.AshEating;
 import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +40,15 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
         this.jobs = jobs;
         this.context = context;
         this.movementSpeed = movementSpeed;
+        setMaxCheckRate(40);
+    }
+
+    @Override
+    protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
+        if (AshEating.isBusy(maid)) {
+            return false;
+        }
+        return super.checkExtraStartConditions(level, maid);
     }
 
     @Override

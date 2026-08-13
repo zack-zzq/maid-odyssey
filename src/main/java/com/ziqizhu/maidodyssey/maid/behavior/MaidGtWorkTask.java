@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
 import com.ziqizhu.maidodyssey.gt.GtCompat;
 import com.ziqizhu.maidodyssey.gt.GtJob;
+import com.ziqizhu.maidodyssey.maid.work.AshEating;
 import com.ziqizhu.maidodyssey.maid.work.MaintenanceWork;
 import com.ziqizhu.maidodyssey.maid.work.MufflerWork;
 import com.ziqizhu.maidodyssey.report.MaidReporter;
@@ -38,6 +39,9 @@ public class MaidGtWorkTask extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
         Brain<EntityMaid> brain = maid.getBrain();
+        if (AshEating.isBusy(maid)) {
+            return false;
+        }
         return brain.getMemory(InitEntities.TARGET_POS.get()).map(target -> {
             Vec3 targetPosition = target.currentPosition();
             double reach = MaidOdysseyConfig.workReach() + 0.75D;

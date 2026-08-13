@@ -63,6 +63,11 @@ public abstract class AbstractGtTask implements IMaidTask {
     }
 
     @Override
+    public boolean enableLookAndRandomWalk(EntityMaid maid) {
+        return false;
+    }
+
+    @Override
     public boolean isEnable(EntityMaid maid) {
         return GtCompat.isLoaded();
     }

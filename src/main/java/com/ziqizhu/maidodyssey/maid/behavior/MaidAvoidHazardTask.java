@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.ziqizhu.maidodyssey.MaidOdysseyConfig;
 import com.ziqizhu.maidodyssey.gt.GtCompat;
 import com.ziqizhu.maidodyssey.hazard.HazardTracker;
+import com.ziqizhu.maidodyssey.maid.work.AshEating;
 import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -46,6 +47,10 @@ public class MaidAvoidHazardTask extends Behavior<EntityMaid> {
 
         BlockPos feet = maid.blockPosition();
         boolean inDanger = hazards.isOccupied(feet);
+        if (AshEating.isBusy(maid) && !inDanger) {
+            cancelWalk(maid);
+            return;
+        }
         if (maid.isSleeping() && !inDanger) {
             return;
         }

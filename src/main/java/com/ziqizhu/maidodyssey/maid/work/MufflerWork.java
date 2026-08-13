@@ -57,8 +57,10 @@ public final class MufflerWork {
             ItemStack rejected = ItemHandlerHelper.insertItemStacked(backpack, removed, false);
             taken += removedCount - rejected.getCount();
             if (!rejected.isEmpty()) {
-                // Should not happen after the simulation above, but never void a player's items.
-                ItemHandlerHelper.insertItemStacked(hatch, rejected, false);
+                ItemStack returned = ItemHandlerHelper.insertItemStacked(hatch, rejected, false);
+                if (!returned.isEmpty()) {
+                    AshEating.consume(maid, returned, pos);
+                }
                 leftBehind = true;
             }
             if (accepted < preview.getCount()) {
@@ -72,7 +74,7 @@ public final class MufflerWork {
                     ? "message.maid_odyssey.muffler.voided"
                     : "message.maid_odyssey.muffler.cleaned", MaidReporter.gold(taken));
         }
-        if (leftBehind && !destroyAsh) {
+        if (leftBehind && !destroyAsh && !AshEating.isBusy(maid)) {
             AshEating.start(maid, hatch, pos);
             leftBehind = GtCompat.hasAnyItem(hatch);
         }

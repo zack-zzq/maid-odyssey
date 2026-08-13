@@ -8,115 +8,105 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * When the backpack cannot take more ash, the maid eats up to one stack instead of asking the
- * owner to empty her bag. Looks and sounds like a normal meal: {@code startUsingItem} so Gecko
- * models play the use animation, item crumbs and eat sounds on the way, no nutrition or healing.
+ * Backpack-full fallback: destroy up to one stack of muffler ash and play a fake eat.
+ * <p>
+ * GregTech ash is not food, so this must not call {@code startUsingItem} / {@code eat}. Those
+ * paths either do nothing or shove the leftover stack into a full backpack and drop it on the
+ * ground. The maid only gets crumbs, chew sounds, and a short stand-still.
  */
 public final class AshEating {
-    private static final int EAT_DURATION_TICKS = 32;
+    private static final int ANIMATION_TICKS = 32;
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
 
     private AshEating() {
     }
 
+    public static boolean isBusy(EntityMaid maid) {
+        return SESSIONS.containsKey(maid.getUUID());
+    }
+
     /**
-     * Pulls at most one stack out of the hatch and starts the eat animation.
+     * Pulls at most one stack out of the hatch and eats it.
      *
-     * @return how many ash items are being eaten, or 0 when she could not start
+     * @return how many ash items were eaten, or 0 when she could not start
      */
     public static int start(EntityMaid maid, IItemHandler hatch, BlockPos pos) {
-        if (maid.isUsingItem() || maid.level().isClientSide()) {
+        if (isBusy(maid) || maid.level().isClientSide()) {
             return 0;
         }
         ItemStack ash = takeOneStack(hatch);
         if (ash.isEmpty()) {
             return 0;
         }
-
-        InteractionHand hand = InteractionHand.OFF_HAND;
-        ItemStack previous = maid.getItemInHand(hand).copy();
-        maid.setItemInHand(hand, ash);
-        if (!previous.isEmpty()) {
-            maid.memoryHandItemStack(previous);
-        }
-
-        SESSIONS.put(maid.getUUID(), new Session(pos.immutable(), ash.getCount()));
-        maid.startUsingItem(hand);
-        if (!maid.isUsingItem()) {
-            abort(maid, hatch, ash, previous);
-            return 0;
-        }
+        begin(maid, ash, pos);
         return ash.getCount();
     }
 
-    @SubscribeEvent
-    public static void onUseStart(LivingEntityUseItemEvent.Start event) {
-        if (SESSIONS.containsKey(event.getEntity().getUUID())) {
-            event.setDuration(EAT_DURATION_TICKS);
+    /**
+     * Eat a stack that is already in the maid's hands (for example a backpack reject that
+     * no longer fits in the hatch). The stack is destroyed; it is never dropped.
+     */
+    public static void consume(EntityMaid maid, ItemStack ash, BlockPos pos) {
+        if (ash.isEmpty() || maid.level().isClientSide()) {
+            return;
         }
+        if (isBusy(maid)) {
+            ash.setCount(0);
+            return;
+        }
+        begin(maid, ash.copy(), pos);
+        ash.setCount(0);
     }
 
-    @SubscribeEvent
-    public static void onUseTick(LivingEntityUseItemEvent.Tick event) {
-        if (!(event.getEntity() instanceof EntityMaid maid) || !SESSIONS.containsKey(maid.getUUID())) {
-            return;
-        }
-        if (event.getDuration() % 4 != 0) {
-            return;
-        }
-        maid.spawnItemParticles(event.getItem(), 5);
-        float pitch = (maid.getRandom().nextFloat() - maid.getRandom().nextFloat()) * 0.2F + 1.0F;
-        maid.playSound(SoundEvents.GENERIC_EAT, 0.5F + 0.5F * maid.getRandom().nextFloat(), pitch);
-    }
-
-    @SubscribeEvent
-    public static void onUseFinish(LivingEntityUseItemEvent.Finish event) {
-        if (!(event.getEntity() instanceof EntityMaid maid)) {
-            return;
-        }
-        Session session = SESSIONS.remove(maid.getUUID());
-        if (session == null) {
-            return;
-        }
-        event.setResultStack(ItemStack.EMPTY);
-        finish(maid, session);
-    }
-
-    @SubscribeEvent
-    public static void onUseStop(LivingEntityUseItemEvent.Stop event) {
-        if (!(event.getEntity() instanceof EntityMaid maid)) {
-            return;
-        }
-        Session session = SESSIONS.remove(maid.getUUID());
-        if (session == null) {
-            return;
-        }
-        maid.setItemInHand(maid.getUsedItemHand(), ItemStack.EMPTY);
-        finish(maid, session);
-    }
-
-    private static void finish(EntityMaid maid, Session session) {
+    private static void begin(EntityMaid maid, ItemStack ash, BlockPos pos) {
+        int count = ash.getCount();
+        ItemStack crumb = ash.copy();
+        crumb.setCount(1);
+        SESSIONS.put(maid.getUUID(), new Session(crumb, ANIMATION_TICKS));
+        maid.getNavigation().stop();
+        maid.swing(InteractionHand.MAIN_HAND);
+        maid.spawnItemParticles(crumb, 8);
+        maid.playSound(SoundEvents.GENERIC_EAT, 0.8F, 1.0F);
         maid.getFavorabilityManager().reduce(1);
-        maid.playSound(SoundEvents.PLAYER_BURP, 0.5F, maid.getRandom().nextFloat() * 0.1F + 0.9F);
-        if (maid.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.ANGRY_VILLAGER,
-                    maid.getX(), maid.getEyeY(), maid.getZ(), 4, 0.25, 0.2, 0.25, 0);
-        }
-        MaidReporter.problem(maid, session.pos,
+        MaidReporter.problem(maid, pos,
                 "message.maid_odyssey.muffler.ate_ash",
-                MaidReporter.gold(session.count),
+                MaidReporter.gold(count),
                 MaidReporter.red("-1"));
+    }
+
+    @SubscribeEvent
+    public static void onTick(LivingEvent.LivingTickEvent event) {
+        if (!(event.getEntity() instanceof EntityMaid maid) || maid.level().isClientSide()) {
+            return;
+        }
+        Session session = SESSIONS.get(maid.getUUID());
+        if (session == null) {
+            return;
+        }
+        session.ticksLeft--;
+        if (session.ticksLeft > 0 && session.ticksLeft % 4 == 0) {
+            maid.spawnItemParticles(session.crumb, 5);
+            maid.playSound(SoundEvents.GENERIC_EAT, 0.5F + 0.5F * maid.getRandom().nextFloat(),
+                    (maid.getRandom().nextFloat() - maid.getRandom().nextFloat()) * 0.2F + 1.0F);
+        }
+        if (session.ticksLeft <= 0) {
+            SESSIONS.remove(maid.getUUID());
+            maid.playSound(SoundEvents.PLAYER_BURP, 0.5F, maid.getRandom().nextFloat() * 0.1F + 0.9F);
+            if (maid.level() instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.ANGRY_VILLAGER,
+                        maid.getX(), maid.getEyeY(), maid.getZ(), 4, 0.25, 0.2, 0.25, 0);
+            }
+        }
     }
 
     @SubscribeEvent
@@ -139,15 +129,13 @@ public final class AshEating {
         return ItemStack.EMPTY;
     }
 
-    private static void abort(EntityMaid maid, IItemHandler hatch, ItemStack ash, ItemStack previous) {
-        SESSIONS.remove(maid.getUUID());
-        maid.setItemInHand(InteractionHand.OFF_HAND, previous);
-        ItemStack leftover = ItemHandlerHelper.insertItemStacked(hatch, ash, false);
-        if (!leftover.isEmpty() && maid.level() instanceof ServerLevel) {
-            maid.spawnAtLocation(leftover);
-        }
-    }
+    private static final class Session {
+        private final ItemStack crumb;
+        private int ticksLeft;
 
-    private record Session(BlockPos pos, int count) {
+        private Session(ItemStack crumb, int ticksLeft) {
+            this.crumb = crumb;
+            this.ticksLeft = ticksLeft;
+        }
     }
 }
