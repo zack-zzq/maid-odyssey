@@ -13,7 +13,6 @@ import com.ziqizhu.maidodyssey.report.MaidReporter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
-import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +26,8 @@ import java.util.Set;
  * hatch is not: the maid cannot stand on it, and the 3×3×2 neighbourhood around it is usually
  * more of the multiblock. After the scan we rewrite the walk target to the standing spot we
  * already found, while leaving {@code TARGET_POS} pointing at the machine so the work behavior
- * knows what to service.
+ * knows what to service. If she is already close enough, the walk target is dropped so she
+ * stays put and works.
  */
 public class MaidGtSearchTask extends MaidMoveToBlockTask {
     private final Set<GtJob> jobs;
@@ -63,12 +63,18 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
             return;
         }
         searchForDestination(level, maid);
-        if (lastStandingSpot != null) {
-            BehaviorUtils.setWalkAndLookTargetMemories(maid, lastStandingSpot, movementSpeed, 0);
-            maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresent(target ->
-                    maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET,
-                            new BlockPosTracker(target.currentBlockPosition())));
-        }
+        maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresent(target -> {
+            BlockPos machine = target.currentBlockPosition();
+            if (MaidGtWorkTask.inWorkReach(maid, machine)) {
+                maid.getNavigation().stop();
+                maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+                maid.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+                return;
+            }
+            if (lastStandingSpot != null) {
+                BehaviorUtils.setWalkAndLookTargetMemories(maid, lastStandingSpot, movementSpeed, 0);
+            }
+        });
     }
 
     @Override
@@ -92,13 +98,15 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
 
     /**
      * Closest block the maid can actually stand in that is still within {@code workReach} of the
-     * machine. Searching includes the ground several blocks below, which is where she ends up for
-     * a muffler hatch sitting on the roof of a blast furnace.
+     * machine. If she is already in reach, her current block wins so she does not shuffle around.
      */
     @Nullable
     static BlockPos findStandingSpot(MaidPathFindingBFS pathFinding, EntityMaid maid, BlockPos machine) {
-        int reach = MaidOdysseyConfig.workReach();
         BlockPos maidPos = maid.blockPosition();
+        if (isUsableStandingSpot(pathFinding, maid, machine, maidPos, true)) {
+            return maidPos.immutable();
+        }
+        int reach = MaidOdysseyConfig.workReach();
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
         for (int y = -reach; y <= 1; y++) {
@@ -111,11 +119,7 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
                         continue;
                     }
                     BlockPos candidate = machine.offset(x, y, z);
-                    if (maid.level() instanceof ServerLevel serverLevel
-                            && HazardTracker.isUnsafeStanding(serverLevel, maid, candidate, machine)) {
-                        continue;
-                    }
-                    if (!pathFinding.canPathReach(candidate)) {
+                    if (!isUsableStandingSpot(pathFinding, maid, machine, candidate, false)) {
                         continue;
                     }
                     double distance = candidate.distSqr(maidPos);
@@ -127,6 +131,21 @@ public class MaidGtSearchTask extends MaidMoveToBlockTask {
             }
         }
         return best;
+    }
+
+    private static boolean isUsableStandingSpot(MaidPathFindingBFS pathFinding, EntityMaid maid,
+                                                BlockPos machine, BlockPos candidate, boolean alreadyStanding) {
+        if (candidate.equals(machine)) {
+            return false;
+        }
+        if (alreadyStanding && !MaidGtWorkTask.inWorkReach(maid, machine)) {
+            return false;
+        }
+        if (maid.level() instanceof ServerLevel serverLevel
+                && HazardTracker.isUnsafeStanding(serverLevel, maid, candidate, machine)) {
+            return false;
+        }
+        return alreadyStanding || candidate.equals(maid.blockPosition()) || pathFinding.canPathReach(candidate);
     }
 
     @Override

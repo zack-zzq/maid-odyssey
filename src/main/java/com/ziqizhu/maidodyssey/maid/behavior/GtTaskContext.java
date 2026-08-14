@@ -8,8 +8,8 @@ import java.util.Map;
 /**
  * Scratch state shared by the two behaviors of one maid task instance.
  * <p>
- * Machines the maid could not service are parked here for a while, otherwise she would walk back
- * to the same full muffler hatch every five seconds forever.
+ * Machines she cannot service (missing tools, unreachable) are parked here for a while.
+ * Leftover muffler ash is not parked: a standing maid must be able to eat the next stack.
  */
 public final class GtTaskContext {
     private final Map<BlockPos, Long> ignoredUntil = new HashMap<>();
